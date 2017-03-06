@@ -36,7 +36,6 @@ Then in `config.h.sample` file you may edit the following :
 - Protect the acces point
 ```
 char ap_pass[30]="yourpassword",
-
 ```
 
 ## Usage
