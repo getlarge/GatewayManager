@@ -8,25 +8,24 @@
 
 */
 
-#include <FS.h>                   //this needs to be first, or it all crashes and burns...
+#include <FS.h>                   // this needs to be first, or it all crashes and burns...
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266httpUpdate.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-#include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
-#include "config.h"
-#include <DS3232RTC.h> //http://github.com/JChristensen/DS3232RTC
+#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
+#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
+#include <DS3232RTC.h>            // http://github.com/JChristensen/DS3232RTC
 #include <Wire.h>
 #include <TimeLib.h>
-#include <TimeAlarms.h>
+//#include <TimeAlarms.h>
 #include <Ticker.h>
 #include <Bounce2.h>
-#include <SPI.h>
+#include "config.h" // ne pas déplacer
 
-AlarmId id;
+//AlarmId id;
 Bounce debouncer = Bounce();
 //Bounce debouncer4 = Bounce(); 
 Ticker ticker;
@@ -75,11 +74,11 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println(myWiFiManager->getConfigPortalSSID());
 }
 
-void getNTP() {
+void getNTP() { /// Working alone but not inside this program
   WiFi.hostByName(ntpServerName, timeServerIP); 
   sendNTPpacket(timeServerIP); // send an NTP packet to a time server
   // wait to see if a reply is available
-  Alarm.delay(1000);
+  delay(1000);
   
   int cb = udp.parsePacket();
   if (!cb) {
@@ -144,9 +143,7 @@ void before() {
         Serial.println("Unable to sync with the RTC");
     else
         Serial.println("RTC has set the system time");  
-//  id = Alarm.timerRepeat(60, Repeats);           // timer for every 15 second
   set_pins();
-  //set_debounce();
  // ticker.attach(0.5, tick);
   Serial.println();
  // Alarm.delay(100);
@@ -169,22 +166,22 @@ void before() {
         json.printTo(Serial);
         if (json.success()) {
           strcpy(mqtt_server, json["mqtt_server"]);
-          //strcpy(mqtt_port, json["mqtt_port"]);
+          strcpy(mqtt_port, json["mqtt_port"]);
           strcpy(mqtt_client, json["mqtt_client"]);
           strcpy(mqtt_user, json["mqtt_user"]);
           strcpy(mqtt_password, json["mqtt_password"]);
-//          strcpy(mqtt_topic_in,mqtt_client); /// à séquencer 
-//          strcat(mqtt_topic_in,in); 
+          strcpy(mqtt_topic_in,mqtt_client); 
+          strcat(mqtt_topic_in,in); 
           strcpy(mqtt_topic_out,mqtt_client);
           strcat(mqtt_topic_out,out);
           MY_CONTROLLER_URL_ADDRESS = mqtt_server;
-          //MY_PORT = mqtt_port;
+          MY_PORT = atoi(mqtt_port);
           MY_MQTT_CLIENT_ID = mqtt_client;
           MY_MQTT_USER = mqtt_user;
           MY_MQTT_PASSWORD = mqtt_password;
         //  MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
+          mqttTopicIn = mqtt_topic_in;
           MY_MQTT_PUBLISH_TOPIC_PREFIX = mqtt_topic_out;
-          Serial.println(mqttTopicOut);
         } else {
           Serial.println("failed to load json config");
         }
@@ -200,7 +197,7 @@ void before() {
   //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   wifiManager.addParameter(&custom_mqtt_server);
-  //wifiManager.addParameter(&custom_mqtt_port);
+  wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_client);
   wifiManager.addParameter(&custom_mqtt_user);
   wifiManager.addParameter(&custom_mqtt_password);
@@ -223,7 +220,7 @@ void before() {
   Serial.println("connecté (auto)");
   if (shouldSaveConfig) {
     strcpy(mqtt_server, custom_mqtt_server.getValue()); 
-    //strcpy(mqtt_port, custom_mqtt_port.getValue());
+    strcpy(mqtt_port, custom_mqtt_port.getValue());
     strcpy(mqtt_client, custom_mqtt_client.getValue()); 
     strcpy(mqtt_user, custom_mqtt_user.getValue());
     strcpy(mqtt_password, custom_mqtt_password.getValue());
@@ -231,20 +228,21 @@ void before() {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& json = jsonBuffer.createObject();
     json["mqtt_server"] = mqtt_server;
-    //json["mqtt_port"] = mqtt_port;
+    json["mqtt_port"] = mqtt_port;
     json["mqtt_client"] = mqtt_client;
     json["mqtt_user"] = mqtt_user;
     json["mqtt_password"] = mqtt_password;
-    //strcpy(mqtt_topic_in,mqtt_client);
-    //strcat(mqtt_topic_in,in);
+    strcpy(mqtt_topic_in,mqtt_client);
+    strcat(mqtt_topic_in,in);
     strcpy(mqtt_topic_out,mqtt_client);
     strcat(mqtt_topic_out,out);
     MY_CONTROLLER_URL_ADDRESS = mqtt_server;
-    //MY_PORT = mqtt_port;
+    MY_PORT = atoi(mqtt_port);
     MY_MQTT_CLIENT_ID = mqtt_client;
     MY_MQTT_USER = mqtt_user;
     MY_MQTT_PASSWORD = mqtt_password;
     //MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
+    mqttTopicIn = mqtt_topic_in;
     MY_MQTT_PUBLISH_TOPIC_PREFIX = mqtt_topic_out;
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
@@ -254,201 +252,20 @@ void before() {
     json.printTo(configFile);
     configFile.close();
   }
-  Serial.println("IP locale");
+  Serial.print("IP locale : ");
   Serial.println(WiFi.localIP());
-  Serial.println("MQTT config");
-  Serial.println(MY_CONTROLLER_URL_ADDRESS);
-  Serial.println(MY_PORT);
-  Serial.println(MY_MQTT_CLIENT_ID);
+  Serial.print("MQTT config : ");
+  Serial.print(MY_CONTROLLER_URL_ADDRESS);
+  Serial.print(":");
+  Serial.print(MY_PORT);
+  Serial.print(" | ");
+  Serial.print(MY_MQTT_CLIENT_ID);
+  Serial.print(" | ");
   Serial.println(MY_MQTT_USER);
-  ticker.detach();
-}
-
-#include <MySensors.h>
-
-void printDigits(int digits) {
-    // utility function for digital clock display: prints preceding colon and leading 0
-    Serial.print(':');
-    if(digits < 10)
-      Serial.print('0');
-      Serial.print(digits);
-}
-
-void digitalClockDisplay(void) {
-    // digital clock display of the time
-    Serial.print(hour());
-    printDigits(minute());
-    printDigits(second());
-    Serial.print(' ');
-    Serial.print(day());
-    Serial.print(' ');
-    Serial.print(month());
-    Serial.print(' ');
-    Serial.print(year()); 
-    Serial.println(); 
-}
-
-void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrivé [");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
-  if ((char)payload[0] == '1') {
-    //digitalWrite(BUILTIN_LED, LOW);   
-    //digitalWrite(D7, HIGH); 
-  }
-  
-  if ((char)payload[0]=='0') {
-    //digitalWrite(BUILTIN_LED, HIGH); 
-   // digitalWrite(D7, LOW); 
-  }
-}
-
-boolean reconnect() {
-  // variables de la librairie MQTT du core MySensor 
-  if (_MQTT_client.connect(MY_MQTT_CLIENT_ID),(MY_MQTT_USER),(MY_MQTT_PASSWORD)) {
-    _MQTT_client.setServer(MY_CONTROLLER_URL_ADDRESS, MY_PORT);
-  //  _MQTT_client.setCallback(callback);
-    _MQTT_client.publish(MY_MQTT_PUBLISH_TOPIC_PREFIX, "Client connecté");
-    _MQTT_client.subscribe(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
-   // ticker.detach();
-  }
-  return _MQTT_client.connected();
-}
-
-void setup(void) {
-    Serial.println();
-    Serial.println("Starting UDP");
-    udp.begin(localPort);
-    Serial.print("Local port: ");
-    Serial.println(udp.localPort());
-    //Alarm.alarmRepeat(p1_on_hour,p1_on_min,p1_on_sec,Prog1_On);  
-    //Alarm.alarmRepeat(p1_off_hour,p1_off_min,p1_off_sec,Prog1_Off); 
-    //Alarm.alarmRepeat(dowSaturday,8,30,30,WeeklyAlarm);  // 8:30:30 every Saturday
-    //Alarm.alarmRepeat(16,0,0,WeeklyAlarm);  // 8:30:30 every Saturday
-    //id = Alarm.timerRepeat(60, Repeats);           // timer for every 15 seconds
-    //id = Alarm.timerRepeat(120, Repeats2);      // timer for every 2 seconds
-    //Alarm.timerOnce(10, OnceOnly);            // called once after 10 seconds
-    //set_pins();
-    digitalClockDisplay();
-    //getNTP();
-    //requestTime();  
-    for (uint8_t t = 4; t > 0; t--) { // Utile en cas d'OTA ?
-      Serial.printf("[SETUP] WAIT %d...\n", t);
-      Serial.flush();
-      Alarm.delay(1000);
-    }
-}
-
-void presentation() {
-  sendSketchInfo(SKETCH_NAME, SKETCH_MAJOR_VER "." SKETCH_MINOR_VER);
-  
-}
-
-void receiveTime(unsigned long controllerTime) {
-  // Ok, set incoming time 
-  Serial.print("Time value received: ");
-  Serial.println(controllerTime);
-  RTC.set(controllerTime);
-  setSyncProvider(RTC.get);   // the function to get the time from the RTC
-  timeReceived = true;
-}
-
-void loop(void) {
-   debouncer.update();
-   int value1 = debouncer.read();
-  if ( ! executeOnce) {
-  // getNTP();
-  //  digitalClockDisplay(); 
-    executeOnce = true; 
-  }
-  
-
-   if (value1 == LOW) {
-    Serial.println("Appui long détecté, demande de config wifi");
-    value1 = HIGH;
-    wifimanager_ondemand();
-  }
-  
-   
-  if (digitalRead(OTA_BUTTON_PIN) == LOW ) {
-   // ticker.attach(0.2, tick);
-    t_httpUpdate_return ret = ESPhttpUpdate.update("https://getlarge.eu/firmware/Gatewy_MySensor.ino.bin");
-    switch (ret) {
-      case HTTP_UPDATE_FAILED: // à corriger, blocking loop
-        Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-        Serial.println();
-        return;
-       // break;
-
-      case HTTP_UPDATE_NO_UPDATES:
-        Serial.println("HTTP_UPDATE_NO_UPDATES");
-        break;
-
-      case HTTP_UPDATE_OK:
-        Serial.println("HTTP_UPDATE_OK");
-        ticker.detach();
-        break;
-    }
-  }
- // unsigned long Now=millis();
-  // If no time has been received yet, request it every 10 second from controller
-  // When time has been received, request update every hour
-//  if ((!timeReceived && (Now-lastRequest) > (10UL*1000UL))
-//    || (timeReceived && (Now-lastRequest) > (60UL*1000UL*60UL))) {
-//    // Request time from controller. 
-//    Serial.println("requesting time");
-//    requestTime(); 
-//    lastRequest = Now;
-//  }
-//  if (Now-lastUpdate > 10000) {
-//    digitalClockDisplay();
-//    lastUpdate = Now;
-//   }
-   //Alarm.delay(500);  //?
-   
-  
-  if ( WiFi.status() != WL_CONNECTED) {
-    long Now = millis();
-    if (Now - lastWifiReconnectAttempt > 5 * 1000) {
-      ++count;
-      lastWifiReconnectAttempt = Now;
-      if (count == 1) {
-      }
-      else if (count == 5) {
-        Serial.println("Wifi perdu, réessaye au bout de 5 seconds sans connection --> mode config");
-        wifimanager_ondemand();
-        lastWifiReconnectAttempt = 0;
-        count = 0;
-      }
-//    long Now = millis();
-//    if (Now - lastWifiReconnectAttempt > 5 * 1000) {
-//      lastWifiReconnectAttempt = Now;
-//      Serial.println("Wifi perdu, réessaye au bout de 5 seconds sans connection --> mode config");
-//      wifimanager_ondemand();
-//      lastWifiReconnectAttempt = 0;
-     }
-   }
-
-   if (!_MQTT_client.connected()) {
-    //ticker.attach(0.2, tick);
-    Serial.println("reconnexion mqtt (loop)");
-    long Now = millis();
-    if (Now - lastMqttReconnectAttempt > 5 * 1000) {
-      lastMqttReconnectAttempt = Now;
-      // Attempt to reconnect
-      if (reconnect()) {
-        lastMqttReconnectAttempt = 0;
-      }
-    }
-  }
-  
-    else if ((value1 == HIGH) && (_MQTT_client.connected()) && (WiFi.status() != WL_CONNECTED)) {
-  Alarm.delay(0);
-  }
+  Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
+  Serial.print(" | ");
+  Serial.println(mqttTopicIn);
+ // ticker.detach();
 }
 
 

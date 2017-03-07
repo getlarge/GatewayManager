@@ -36,14 +36,17 @@ Then in `config.h.sample` file you may edit the following :
 - Protect the acces point
 ```
 char ap_pass[30]="yourpassword",
-
 ```
 
 ## Usage
 
 Open any .ino file of the folder with Arduino IDE
 Edit your preferences
+Uncomment FS.Format the first time you upload
+Comment out FS.format
 Upload the code on your ESP8266 board
+
+Topic structure: MY_MQTT_PUBLISH_TOPIC_PREFIX/NODE-ID/SENSOR-ID/CMD-TYPE/ACK-FLAG/SUB-TYPE
 
 ## Dev
 
