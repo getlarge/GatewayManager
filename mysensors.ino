@@ -1,3 +1,4 @@
+#include <SPI.h>
 #include <MySensors.h>
 
 void printDigits(int digits) {
@@ -29,6 +30,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
+  _MQTT_available = protocolMQTTParse(_MQTT_msg, topic, payload, length);
   Serial.println();
   if ((char)payload[0] == '1') {
     //digitalWrite(BUILTIN_LED, LOW);   
@@ -44,12 +46,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
 boolean reconnect() {
   // variables de la librairie MQTT du core MySensor 
   if (_MQTT_client.connect(MY_MQTT_CLIENT_ID),(MY_MQTT_USER),(MY_MQTT_PASSWORD)) {
+#if defined(MY_CONTROLLER_IP_ADDRESS)
+    _MQTT_client.setServer(MY_CONTROLLER_IP_ADDRESS, MY_PORT);
+#else
     _MQTT_client.setServer(MY_CONTROLLER_URL_ADDRESS, MY_PORT);
-  //  _MQTT_client.setCallback(callback);
-    _MQTT_client.publish(MY_MQTT_PUBLISH_TOPIC_PREFIX, "Client connecté");
-   // _MQTT_client.subscribe(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "/+/+/+/+/+");
+#endif
+    _MQTT_client.setCallback(callback);
+    presentNode();
+    _MQTT_client.publish(MY_MQTT_PUBLISH_TOPIC_PREFIX, "Client MQTT connecté");
     _MQTT_client.subscribe(mqttTopicIn);
-
+   // _MQTT_client.subscribe(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "/+/+/+/+/+");
    // ticker.detach();
   }
   return _MQTT_client.connected();
@@ -57,19 +63,11 @@ boolean reconnect() {
 
 void setup(void) {
     Serial.println();
-    if (reconnect()) {
-        lastMqttReconnectAttempt = 0;}
+    reconnect();
     Serial.println("Starting UDP");
     udp.begin(localPort);
     Serial.print("Local port: ");
     Serial.println(udp.localPort());
-    //Alarm.alarmRepeat(p1_on_hour,p1_on_min,p1_on_sec,Prog1_On);  
-    //Alarm.alarmRepeat(p1_off_hour,p1_off_min,p1_off_sec,Prog1_Off); 
-    //Alarm.alarmRepeat(dowSaturday,8,30,30,WeeklyAlarm);  // 8:30:30 every Saturday
-    //Alarm.alarmRepeat(16,0,0,WeeklyAlarm);  // 8:30:30 every Saturday
-    //id = Alarm.timerRepeat(60, Repeats);           // timer for every 15 seconds
-    //id = Alarm.timerRepeat(120, Repeats2);      // timer for every 2 seconds
-    //Alarm.timerOnce(10, OnceOnly);            // called once after 10 seconds
     //set_pins();
     digitalClockDisplay();
     //getNTP();
@@ -77,7 +75,7 @@ void setup(void) {
     for (uint8_t t = 4; t > 0; t--) { // Utile en cas d'OTA ?
       Serial.printf("[SETUP] WAIT %d...\n", t);
       Serial.flush();
-      Alarm.delay(1000);
+      delay(1000);
     }
 }
 
@@ -98,19 +96,22 @@ void receiveTime(unsigned long controllerTime) {
 void loop(void) {
   debouncer.update();
   int value1 = debouncer.read();
+  
   if ( ! executeOnce) {
-    reconnect();
+    executeOnce = true; 
+    reconnect(); // remplace le paramétrage de MQTT mysensors
   // getNTP();
   //  digitalClockDisplay(); 
-    executeOnce = true; 
   }
   
   if (value1 == LOW) {
     Serial.println("Appui long détecté, demande de config wifi");
-    value1 == HIGH;
+    value1 == HIGH; /// à modifier par l'exemple "retrigger" de la lib bounce2
     wifimanager_ondemand();
   }
-   if ( WiFi.status() != WL_CONNECTED) {
+
+  //// Pas encore testé la fonction décompte
+  if ( WiFi.status() != WL_CONNECTED) {
     long Now = millis();
     if (Now - lastWifiReconnectAttempt > 5 * 1000) {
       ++wifiCount;
@@ -150,12 +151,12 @@ void loop(void) {
       wifimanager_ondemand();
       lastMqttReconnectAttempt = 0;
       mqttCount = 0;
-      }
+    }
   }    
   
   if (digitalRead(OTA_BUTTON_PIN) == LOW ) {
    // ticker.attach(0.2, tick);
-    t_httpUpdate_return ret = ESPhttpUpdate.update("https://getlarge.eu/firmware/Gateway_MySensor.ino.bin");
+    t_httpUpdate_return ret = ESPhttpUpdate.update("https://getlarge.eu/firmware/gateway_mqtt.ino.bin");
     switch (ret) {
       case HTTP_UPDATE_FAILED: // à corriger, blocking loop
         Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
@@ -189,7 +190,7 @@ void loop(void) {
    //Alarm.delay(500);  //?
   
   else if ((value1 == HIGH) && (_MQTT_client.connected()) && (WiFi.status() != WL_CONNECTED)) {
-     Alarm.delay(0);
+     delay(0);
   }
 }
 

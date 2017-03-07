@@ -8,25 +8,24 @@
 
 */
 
-#include <FS.h>                   //this needs to be first, or it all crashes and burns...
+#include <FS.h>                   // this needs to be first, or it all crashes and burns...
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266httpUpdate.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-#include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
-#include "config.h"
-#include <DS3232RTC.h> //http://github.com/JChristensen/DS3232RTC
+#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
+#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
+#include <DS3232RTC.h>            // http://github.com/JChristensen/DS3232RTC
 #include <Wire.h>
 #include <TimeLib.h>
-#include <TimeAlarms.h>
+//#include <TimeAlarms.h>
 #include <Ticker.h>
 #include <Bounce2.h>
-#include <SPI.h>
+#include "config.h" // ne pas déplacer
 
-AlarmId id;
+//AlarmId id;
 Bounce debouncer = Bounce();
 //Bounce debouncer4 = Bounce(); 
 Ticker ticker;
@@ -79,7 +78,7 @@ void getNTP() { /// Working alone but not inside this program
   WiFi.hostByName(ntpServerName, timeServerIP); 
   sendNTPpacket(timeServerIP); // send an NTP packet to a time server
   // wait to see if a reply is available
-  Alarm.delay(1000);
+  delay(1000);
   
   int cb = udp.parsePacket();
   if (!cb) {
@@ -144,9 +143,7 @@ void before() {
         Serial.println("Unable to sync with the RTC");
     else
         Serial.println("RTC has set the system time");  
-//  id = Alarm.timerRepeat(60, Repeats);           // timer for every 15 second
   set_pins();
-  //set_debounce();
  // ticker.attach(0.5, tick);
   Serial.println();
  // Alarm.delay(100);
@@ -173,21 +170,18 @@ void before() {
           strcpy(mqtt_client, json["mqtt_client"]);
           strcpy(mqtt_user, json["mqtt_user"]);
           strcpy(mqtt_password, json["mqtt_password"]);
-          strcpy(mqtt_topic_in,mqtt_client); /// à séquencer 
+          strcpy(mqtt_topic_in,mqtt_client); 
           strcat(mqtt_topic_in,in); 
           strcpy(mqtt_topic_out,mqtt_client);
           strcat(mqtt_topic_out,out);
           MY_CONTROLLER_URL_ADDRESS = mqtt_server;
           MY_PORT = atoi(mqtt_port);
-          //mqttPort = atoi(mqtt_port);
           MY_MQTT_CLIENT_ID = mqtt_client;
           MY_MQTT_USER = mqtt_user;
           MY_MQTT_PASSWORD = mqtt_password;
         //  MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
           mqttTopicIn = mqtt_topic_in;
           MY_MQTT_PUBLISH_TOPIC_PREFIX = mqtt_topic_out;
-          Serial.println(mqttTopicIn);
-          Serial.println(MY_PORT);
         } else {
           Serial.println("failed to load json config");
         }
@@ -258,14 +252,18 @@ void before() {
     json.printTo(configFile);
     configFile.close();
   }
-  Serial.println("IP locale");
+  Serial.print("IP locale : ");
   Serial.println(WiFi.localIP());
-  Serial.println("MQTT config");
-  Serial.println(MY_CONTROLLER_URL_ADDRESS);
-  Serial.println(MY_PORT);
-  Serial.println(MY_MQTT_CLIENT_ID);
+  Serial.print("MQTT config : ");
+  Serial.print(MY_CONTROLLER_URL_ADDRESS);
+  Serial.print(":");
+  Serial.print(MY_PORT);
+  Serial.print(" | ");
+  Serial.print(MY_MQTT_CLIENT_ID);
+  Serial.print(" | ");
   Serial.println(MY_MQTT_USER);
-  Serial.println(MY_MQTT_PUBLISH_TOPIC_PREFIX);
+  Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
+  Serial.print(" | ");
   Serial.println(mqttTopicIn);
  // ticker.detach();
 }

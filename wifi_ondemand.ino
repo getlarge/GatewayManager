@@ -4,7 +4,6 @@ void wifimanager_ondemand() {
   //ticker.attach(0.5, tick);
 
   WiFiManager wifiManager;
-  // wifiManager.resetSettings();
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   //wifiManager.setAPCallback(configModeCallback);
   //wifiManager.setSTAStaticIPConfig(IPAddress(192, 168, 1, 57), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0)); /// Rajout d'n DNS local?
@@ -55,18 +54,18 @@ void wifimanager_ondemand() {
     json.printTo(configFile);
     configFile.close();
   }
-  Serial.println("local ip");
+  Serial.print("IP locale : ");
   Serial.println(WiFi.localIP());
-  Serial.println("MQTT config");
-  Serial.println("Starting UDP");
-  udp.begin(localPort);
-  Serial.print("Local port: ");
-  Serial.println(udp.localPort());
-  Serial.println(MY_CONTROLLER_URL_ADDRESS);
-  Serial.println(MY_PORT);
-  Serial.println(MY_MQTT_CLIENT_ID);
+  Serial.print("MQTT config : ");
+  Serial.print(MY_CONTROLLER_URL_ADDRESS);
+  Serial.print(":");
+  Serial.print(MY_PORT);
+  Serial.print(" | ");
+  Serial.print(MY_MQTT_CLIENT_ID);
+  Serial.print(" | ");
   Serial.println(MY_MQTT_USER);
-  Serial.println(MY_MQTT_PUBLISH_TOPIC_PREFIX);
+  Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
+  Serial.print(" | ");
   Serial.println(mqttTopicIn);
   //ticker.detach();
 }

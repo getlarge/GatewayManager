@@ -42,7 +42,11 @@ char ap_pass[30]="yourpassword",
 
 Open any .ino file of the folder with Arduino IDE
 Edit your preferences
+Uncomment FS.Format the first time you upload
+Comment out FS.format
 Upload the code on your ESP8266 board
+
+Topic structure: MY_MQTT_PUBLISH_TOPIC_PREFIX/NODE-ID/SENSOR-ID/CMD-TYPE/ACK-FLAG/SUB-TYPE
 
 ## Dev
 
