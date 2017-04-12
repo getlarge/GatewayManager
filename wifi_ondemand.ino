@@ -14,7 +14,7 @@ void wifimanager_ondemand() {
   wifiManager.addParameter(&custom_mqtt_password);
   //wifiManager.setAPConfig(IPAddress(192,168,1,5), IPAddress(192,168,1,1), IPAddress(255,255,255,0));
   wifiManager.setMinimumSignalQuality();
-  //wifiManager.setTimeout(180);
+//  wifiManager.setTimeout(300);
   wifiManager.startConfigPortal(connect_ssid, ap_pass);
   
   Serial.println("Connecté (on demand)");
@@ -42,8 +42,7 @@ void wifimanager_ondemand() {
     MY_MQTT_CLIENT_ID = mqtt_client;
     MY_MQTT_USER = mqtt_user;
     MY_MQTT_PASSWORD = mqtt_password;
-    mqttTopicIn = mqtt_topic_in;
-//    MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
+    MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
     MY_MQTT_PUBLISH_TOPIC_PREFIX = mqtt_topic_out;
     Serial.println(mqttTopicIn);
     File configFile = SPIFFS.open("/config.json", "w");
@@ -66,6 +65,7 @@ void wifimanager_ondemand() {
   Serial.println(MY_MQTT_USER);
   Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
   Serial.print(" | ");
-  Serial.println(mqttTopicIn);
+  Serial.println(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
+  set_pins();
   //ticker.detach();
 }

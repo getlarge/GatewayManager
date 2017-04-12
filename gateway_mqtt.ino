@@ -8,19 +8,22 @@
 
 */
 
-#include <FS.h>                   // this needs to be first, or it all crashes and burns...
+#include <FS.h>      // this needs to be first, or it all crashes and burns...
+
+#include <ArduinoJson.h>          
+#include <Arduino.h>
 
 #include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
+#include <ESP8266WiFiMulti.h>
+
+#include <ESP8266HTTPClient.h>        
 #include <ESP8266httpUpdate.h>
+#include <DNSServer.h>
+
+//#include <ESP8266WebServer.h>
 #include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
-#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
-#include <DS3232RTC.h>            // http://github.com/JChristensen/DS3232RTC
 #include <Wire.h>
 #include <TimeLib.h>
-//#include <TimeAlarms.h>
 #include <Ticker.h>
 #include <Bounce2.h>
 #include "config.h" // ne pas déplacer
@@ -29,7 +32,6 @@
 Bounce debouncer = Bounce();
 //Bounce debouncer4 = Bounce(); 
 Ticker ticker;
-WiFiUDP udp;
 
 void tick() {
   //toggle state
@@ -55,7 +57,7 @@ void set_pins(){
     debouncer.attach(MY_INCLUSION_MODE_BUTTON_PIN);
     debouncer.interval(2000);
     //pinMode(MY_INCLUSION_MODE_BUTTON_PIN, INPUT_PULLUP);
-    pinMode(OTA_BUTTON_PIN, INPUT_PULLUP);
+   // pinMode(OTA_BUTTON_PIN, INPUT_PULLUP);
     //debouncer4.attach(OTA_BUTTON_PIN);
    // debouncer4.interval(2000);
     Serial.println("pins set");
@@ -74,80 +76,26 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println(myWiFiManager->getConfigPortalSSID());
 }
 
-void getNTP() { /// Working alone but not inside this program
-  WiFi.hostByName(ntpServerName, timeServerIP); 
-  sendNTPpacket(timeServerIP); // send an NTP packet to a time server
-  // wait to see if a reply is available
-  delay(1000);
-  
-  int cb = udp.parsePacket();
-  if (!cb) {
-    Serial.println("no packet yet");
-  }
-  else {
-    Serial.print("packet received, length=");
-    Serial.println(cb);
-    // We've received a packet, read the data from it
-    udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-
-    //the timestamp starts at byte 40 of the received packet and is four bytes,
-    // or two words, long. First, esxtract the two words:
-    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-    // combine the four bytes (two words) into a long integer
-    // this is NTP time (seconds since Jan 1 1900):
-    unsigned long secsSince1900 = highWord << 16 | lowWord;
-    Serial.print("Seconds since Jan 1 1900 = " );
-    Serial.println(secsSince1900);
-
-    // now convert NTP time into everyday time:
-    Serial.print("Unix time = ");
-    // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
-    const unsigned long seventyYears = 2208988800UL;
-    // subtract seventy years:
-    unsigned long epoch = secsSince1900 - seventyYears;
-    // print Unix time:
-    Serial.println(epoch);
-  }
-}
-
-// send an NTP request to the time server at the given address
-unsigned long sendNTPpacket(IPAddress& address) {
-  Serial.println("sending NTP packet...");
-  // set all bytes in the buffer to 0
-  memset(packetBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-  packetBuffer[1] = 0;     // Stratum, or type of clock
-  packetBuffer[2] = 6;     // Polling Interval
-  packetBuffer[3] = 0xEC;  // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12]  = 49;
-  packetBuffer[13]  = 0x4E;
-  packetBuffer[14]  = 49;
-  packetBuffer[15]  = 52;
-
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  udp.beginPacket(address, 123); //NTP requests are to port 123
-  udp.write(packetBuffer, NTP_PACKET_SIZE);
-  udp.endPacket();
-}
-
 void before() {
-  //  setTime(12, 41, 0, 25, 2, 2017);   //set the system time to ...
-  //  RTC.set(now());                    //set the RTC from the system time
-    setSyncProvider(RTC.get);   // the function to get the time from the RTC}
-    if(timeStatus() != timeSet) 
-        Serial.println("Unable to sync with the RTC");
-    else
-        Serial.println("RTC has set the system time");  
+  for (uint8_t t = 4; t > 0; t--) { // Utile en cas d'OTA ?
+      Serial.printf("[SETUP] WAIT %d...\n", t);
+      Serial.flush();
+      delay(1000);
+    }
   set_pins();
+  
+  if (resetConfig) { // rajouter un bouton
+    Serial.println("Resetting config to the inital state");
+    SPIFFS.begin();
+    delay(10);
+    SPIFFS.format();
+    WiFiManager wifiManager;
+    wifiManager.resetSettings();
+    Serial.println("System cleared");
+  }
+  
  // ticker.attach(0.5, tick);
   Serial.println();
- // Alarm.delay(100);
- // SPIFFS.format();
   Serial.println("mounting FS...");
   if (SPIFFS.begin()) {
     Serial.println("mounted file system");
@@ -179,9 +127,9 @@ void before() {
           MY_MQTT_CLIENT_ID = mqtt_client;
           MY_MQTT_USER = mqtt_user;
           MY_MQTT_PASSWORD = mqtt_password;
-        //  MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
-          mqttTopicIn = mqtt_topic_in;
+          MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
           MY_MQTT_PUBLISH_TOPIC_PREFIX = mqtt_topic_out;
+          Serial.println();
         } else {
           Serial.println("failed to load json config");
         }
@@ -190,25 +138,15 @@ void before() {
   } else {
     Serial.println("failed to mount FS");
   }
-  
   WiFiManager wifiManager;
-  //reset saved settings
-  //wifiManager.resetSettings();
-  //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_client);
   wifiManager.addParameter(&custom_mqtt_user);
   wifiManager.addParameter(&custom_mqtt_password);
-  //set custom ip for portal
-  //wifiManager.setAPConfig(IPAddress(192,168,1,5), IPAddress(192,168,1,1), IPAddress(255,255,255,0));
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  //wifiManager.setAPCallback(configModeCallback);
-  //set minimum quality of signal so it ignores AP's under that quality
-  //defaults to 8%
   wifiManager.setMinimumSignalQuality();
-  //wifiManager.setTimeout(180);
+  //wifiManager.setTimeout(300);
 
   if (!wifiManager.autoConnect(autoconnect_ssid, ap_pass)) {
     Serial.println("Echec de la connection --> Timeout");
@@ -241,8 +179,7 @@ void before() {
     MY_MQTT_CLIENT_ID = mqtt_client;
     MY_MQTT_USER = mqtt_user;
     MY_MQTT_PASSWORD = mqtt_password;
-    //MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
-    mqttTopicIn = mqtt_topic_in;
+    MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
     MY_MQTT_PUBLISH_TOPIC_PREFIX = mqtt_topic_out;
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
@@ -264,8 +201,7 @@ void before() {
   Serial.println(MY_MQTT_USER);
   Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
   Serial.print(" | ");
-  Serial.println(mqttTopicIn);
- // ticker.detach();
+  Serial.println(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
+  //delay(500);
 }
-
 

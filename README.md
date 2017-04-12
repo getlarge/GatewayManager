@@ -25,8 +25,13 @@ following libraries are required :
 git clone git@framagit.org:getlarge/gateway_mqtt.git
 ```
 
-Then in `config.h.sample` file you may edit the following :
+Edit Arduino/libraries/MySensors/core/MyGatewayTransportMQTTClient.cpp to :
 
+```
+ _MQTT_client.subscribe(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
+```
+
+Then in `config.h.sample` file you may edit the following :
 
 - Name your device for your wifi router ( DHCP )
 ```
@@ -40,11 +45,11 @@ char ap_pass[30]="yourpassword",
 
 ## Usage
 
-Open any .ino file of the folder with Arduino IDE
-Edit your preferences
-Uncomment FS.Format the first time you upload
-Comment out FS.format
-Upload the code on your ESP8266 board
+-Open any .ino file of the folder with Arduino IDE
+-Edit your preferences
+-Uncomment FS.Format the first time you upload
+-Comment out FS.format
+-Upload the code on your ESP8266 board
 
 Topic structure: MY_MQTT_PUBLISH_TOPIC_PREFIX/NODE-ID/SENSOR-ID/CMD-TYPE/ACK-FLAG/SUB-TYPE
 
