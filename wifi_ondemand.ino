@@ -14,7 +14,7 @@ void wifimanager_ondemand() {
   wifiManager.addParameter(&custom_mqtt_password);
   //wifiManager.setAPConfig(IPAddress(192,168,1,5), IPAddress(192,168,1,1), IPAddress(255,255,255,0));
   wifiManager.setMinimumSignalQuality();
-  wifiManager.setTimeout(300);
+//  wifiManager.setTimeout(300);
   wifiManager.startConfigPortal(connect_ssid, ap_pass);
   
   Serial.println("Connecté (on demand)");

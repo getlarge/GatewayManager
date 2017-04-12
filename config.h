@@ -61,9 +61,7 @@
 
 #define SKETCH_NAME "gateway_mqtt"
 #define SKETCH_MAJOR_VER "0"
-#define SKETCH_MINOR_VER "5"
-
-#define OTA_BUTTON_PIN D1
+#define SKETCH_MINOR_VER "7"
 
 bool resetConfig = false; // set to true to reset FS and Wifimanager, don't forget to set this to false after
 
@@ -82,17 +80,12 @@ WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
 WiFiManagerParameter custom_mqtt_client("client", "mqtt client", mqtt_client, 60);
 WiFiManagerParameter custom_mqtt_user("user", "mqtt user", mqtt_user, 20);
 WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_password, 30);
-bool shouldSaveConfig = false, timeReceived = false, executeOnce = false;
-unsigned long lastMqttReconnectAttempt = 0, lastWifiReconnectAttempt = 0, lastNtpReconnectAttempt = 0;
-unsigned long lastUpdate=0, lastRequest=0;
+bool shouldSaveConfig = false, timeReceived = false, executeOnce = false, otaSignalReceived = false;
+unsigned long lastMqttReconnectAttempt = 0, lastWifiReconnectAttempt = 0;
+unsigned long lastUpdate=0, lastRequest=0, Timestamp=0;
 int wifiCount = 0, mqttCount = 0, interval = 5000;
-int p1_on_sec, p1_on_min, p1_on_hour, p1_off_sec, p1_off_min, p1_off_hour;
-int p2_on_sec, p2_on_min, p2_on_hour, p2_off_sec, p2_off_min, p2_off_hour;
 
-unsigned int localPort = 2390;      // local port to listen for UDP packets
-IPAddress timeServerIP; // time.nist.gov NTP server
-const char* ntpServerName = "3.fr.pool.ntp.org";
-const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
-unsigned long epoch = 0;
+//time_t getServerTime();
+//void digitalClockDisplay();
+//void printDigits(int digits);
 

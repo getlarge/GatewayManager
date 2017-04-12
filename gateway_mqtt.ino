@@ -22,11 +22,8 @@
 
 //#include <ESP8266WebServer.h>
 #include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
-//#include <WiFiClientSecure.h> /// ADDING FOR TEST
-//#include <WiFiUdp.h>
 #include <Wire.h>
 #include <TimeLib.h>
-//#include <TimeAlarms.h>
 #include <Ticker.h>
 #include <Bounce2.h>
 #include "config.h" // ne pas déplacer
@@ -35,7 +32,6 @@
 Bounce debouncer = Bounce();
 //Bounce debouncer4 = Bounce(); 
 Ticker ticker;
-//WiFiUDP udp;
 
 void tick() {
   //toggle state
@@ -61,7 +57,7 @@ void set_pins(){
     debouncer.attach(MY_INCLUSION_MODE_BUTTON_PIN);
     debouncer.interval(2000);
     //pinMode(MY_INCLUSION_MODE_BUTTON_PIN, INPUT_PULLUP);
-    pinMode(OTA_BUTTON_PIN, INPUT_PULLUP);
+   // pinMode(OTA_BUTTON_PIN, INPUT_PULLUP);
     //debouncer4.attach(OTA_BUTTON_PIN);
    // debouncer4.interval(2000);
     Serial.println("pins set");
@@ -89,11 +85,13 @@ void before() {
   set_pins();
   
   if (resetConfig) { // rajouter un bouton
+    Serial.println("Resetting config to the inital state");
     SPIFFS.begin();
     delay(10);
     SPIFFS.format();
     WiFiManager wifiManager;
     wifiManager.resetSettings();
+    Serial.println("System cleared");
   }
   
  // ticker.attach(0.5, tick);
@@ -204,6 +202,6 @@ void before() {
   Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
   Serial.print(" | ");
   Serial.println(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
-  delay(500);
+  //delay(500);
 }
 
