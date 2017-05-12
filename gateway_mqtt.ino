@@ -35,8 +35,8 @@ Ticker ticker;
 
 void tick() {
   //toggle state
- // int state = digitalRead(BUILTIN_LED); 
- // digitalWrite(BUILTIN_LED, !state); 
+  int state = digitalRead(BUILTIN_LED); 
+  digitalWrite(BUILTIN_LED, !state); 
   //entered config mode, make led toggle faster
 //  ++count;
 //  // when the counter reaches a certain value, start blinking like crazy
@@ -52,11 +52,11 @@ void tick() {
 }
 
 void set_pins(){
-//    pinMode(BUILTIN_LED, OUTPUT);
+    pinMode(BUILTIN_LED, OUTPUT);
+    digitalWrite(BUILTIN_LED, HIGH);
     pinMode(MY_INCLUSION_MODE_BUTTON_PIN, INPUT_PULLUP);
     debouncer.attach(MY_INCLUSION_MODE_BUTTON_PIN);
     debouncer.interval(2000);
-    //pinMode(MY_INCLUSION_MODE_BUTTON_PIN, INPUT_PULLUP);
    // pinMode(OTA_BUTTON_PIN, INPUT_PULLUP);
     //debouncer4.attach(OTA_BUTTON_PIN);
    // debouncer4.interval(2000);
@@ -82,9 +82,11 @@ void before() {
       Serial.flush();
       delay(1000);
     }
-  set_pins();
-  
-  if (resetConfig) { // rajouter un bouton
+    
+  //pinMode(MY_INCLUSION_MODE_BUTTON_PIN, INPUT);
+  if (MY_INCLUSION_MODE_BUTTON_PIN == HIGH) { 
+ // if (resetConfig) { 
+    ticker.attach(0.8, tick);
     Serial.println("Resetting config to the inital state");
     SPIFFS.begin();
     delay(10);
@@ -92,9 +94,10 @@ void before() {
     WiFiManager wifiManager;
     wifiManager.resetSettings();
     Serial.println("System cleared");
+     ticker.detach();
   }
-  
- // ticker.attach(0.5, tick);
+
+  set_pins();
   Serial.println();
   Serial.println("mounting FS...");
   if (SPIFFS.begin()) {
@@ -138,7 +141,9 @@ void before() {
   } else {
     Serial.println("failed to mount FS");
   }
+  ticker.attach(0.5, tick);
   WiFiManager wifiManager;
+  wifiManager.setCustomHeadElement("<script>document.addEventListener('DOMContentLoaded', function() { var params = window.location.search.substring(1).split('&'); for (var param of params) { param = param.split('='); try { document.getElementById( param[0] ).value = param[1]; } catch (e) { console.log('WARNING param', param[0], 'not found in page'); } } });</script>");
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
@@ -146,15 +151,16 @@ void before() {
   wifiManager.addParameter(&custom_mqtt_user);
   wifiManager.addParameter(&custom_mqtt_password);
   wifiManager.setMinimumSignalQuality();
-  //wifiManager.setTimeout(300);
+  wifiManager.setTimeout(180);
 
-  if (!wifiManager.autoConnect(autoconnect_ssid, ap_pass)) {
+  if (!wifiManager.autoConnect()) {
     Serial.println("Echec de la connection --> Timeout");
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
     delay(5000);
   }
+ 
   Serial.println("connecté (auto)");
   if (shouldSaveConfig) {
     strcpy(mqtt_server, custom_mqtt_server.getValue()); 
@@ -202,6 +208,7 @@ void before() {
   Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
   Serial.print(" | ");
   Serial.println(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
-  //delay(500);
+  ticker.detach();
+  digitalWrite(BUILTIN_LED, HIGH);
 }
 

@@ -1,9 +1,8 @@
 void wifimanager_ondemand() {
-  set_pins();
-  //ticker.detach();
-  //ticker.attach(0.5, tick);
+  ticker.attach(0.5, tick);
 
   WiFiManager wifiManager;
+  wifiManager.setCustomHeadElement("<script>document.addEventListener('DOMContentLoaded', function() { var params = window.location.search.substring(1).split('&'); for (var param of params) { param = param.split('='); try { document.getElementById( param[0] ).value = param[1]; } catch (e) { console.log('WARNING param', param[0], 'not found in page'); } } });</script>");
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   //wifiManager.setAPCallback(configModeCallback);
   //wifiManager.setSTAStaticIPConfig(IPAddress(192, 168, 1, 57), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0)); /// Rajout d'n DNS local?
@@ -14,9 +13,11 @@ void wifimanager_ondemand() {
   wifiManager.addParameter(&custom_mqtt_password);
   //wifiManager.setAPConfig(IPAddress(192,168,1,5), IPAddress(192,168,1,1), IPAddress(255,255,255,0));
   wifiManager.setMinimumSignalQuality();
-//  wifiManager.setTimeout(300);
+  wifiManager.setTimeout(180);
+ // wifiManager.startConfigPortal(getChipId());
   wifiManager.startConfigPortal(connect_ssid, ap_pass);
-  
+  //wifiManager.autoConnect();
+
   Serial.println("Connecté (on demand)");
   
   if (shouldSaveConfig) {
@@ -66,6 +67,7 @@ void wifimanager_ondemand() {
   Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
   Serial.print(" | ");
   Serial.println(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
-  set_pins();
-  //ticker.detach();
+  ticker.detach();
+  //set_pins();
+  setup();
 }

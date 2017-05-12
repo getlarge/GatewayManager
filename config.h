@@ -63,7 +63,7 @@
 #define SKETCH_MAJOR_VER "0"
 #define SKETCH_MINOR_VER "7"
 
-bool resetConfig = false; // set to true to reset FS and Wifimanager, don't forget to set this to false after
+bool resetConfig = true; // set to true to reset FS and Wifimanager, don't forget to set this to false after
 
 char ap_pass[30]="motdepasse", autoconnect_ssid[40]="Gateway_AutoConnect", connect_ssid[40]="Gateway_On_Demand";
 char mqtt_client[60], mqtt_user[20], mqtt_password[30], mqtt_server[40], mqtt_port[6];
@@ -75,6 +75,7 @@ const char* mqttUser;
 const char* mqttPassword;
 const char* mqttTopicOut;
 const char* mqttTopicIn;
+const char* otaUrl = "http://ivi.exostic/firmware/gateway_mqtt.ino.bin";
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
 WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
 WiFiManagerParameter custom_mqtt_client("client", "mqtt client", mqtt_client, 60);
