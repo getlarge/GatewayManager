@@ -233,4 +233,3 @@ void before() {
   ticker.detach();
   digitalWrite(BUILTIN_LED, HIGH);
 }
-

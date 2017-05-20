@@ -94,4 +94,3 @@ bool shouldSaveConfig = false, timeReceived = false, executeOnce = false, otaSig
 unsigned long lastMqttReconnectAttempt = 0, lastWifiReconnectAttempt = 0;
 unsigned long lastUpdate=0, lastRequest=0, Timestamp=0;
 int wifiCount = 0, mqttCount = 0, interval = 5000;
-
