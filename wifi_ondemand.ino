@@ -1,22 +1,38 @@
 void wifimanager_ondemand() {
-  set_pins();
-  //ticker.detach();
-  //ticker.attach(0.5, tick);
+  ticker.attach(0.5, tick);
 
   WiFiManager wifiManager;
+  String script;
+  script += "<script>";
+  script += "document.addEventListener('DOMContentLoaded', function() {";
+  script +=     "var params = window.location.search.substring(1).split('&');";
+  script +=     "for (var param of params) {";
+  script +=         "param = param.split('=');";
+  script +=         "try {";
+  script +=             "document.getElementById( param[0] ).value = param[1];";
+  script +=         "} catch (e) {";
+  script +=             "console.log('WARNING param', param[0], 'not found in page');";
+  script +=         "}";
+  script +=     "}";
+  script += "});";
+  script += "</script>";
+  wifiManager.setCustomHeadElement(script.c_str());
   wifiManager.setSaveConfigCallback(saveConfigCallback);
-  //wifiManager.setAPCallback(configModeCallback);
-  //wifiManager.setSTAStaticIPConfig(IPAddress(192, 168, 1, 57), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0)); /// Rajout d'n DNS local?
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_client);
   wifiManager.addParameter(&custom_mqtt_user);
   wifiManager.addParameter(&custom_mqtt_password);
-  //wifiManager.setAPConfig(IPAddress(192,168,1,5), IPAddress(192,168,1,1), IPAddress(255,255,255,0));
   wifiManager.setMinimumSignalQuality();
-//  wifiManager.setTimeout(300);
-  wifiManager.startConfigPortal(connect_ssid, ap_pass);
-  
+  //wifiManager.setTimeout(180);
+  char msgBuffer[10];          
+  char *espChipId;
+  float chipId = ESP.getChipId();
+  espChipId = dtostrf(chipId, 10, 0, msgBuffer);
+  strcpy(deviceId,devicePrefix); 
+  strcat(deviceId,espChipId); 
+  wifiManager.startConfigPortal(deviceId, devicePass);
+
   Serial.println("Connecté (on demand)");
   
   if (shouldSaveConfig) {
@@ -66,6 +82,7 @@ void wifimanager_ondemand() {
   Serial.print(MY_MQTT_PUBLISH_TOPIC_PREFIX);
   Serial.print(" | ");
   Serial.println(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX);
-  set_pins();
-  //ticker.detach();
+  ticker.detach();
+  //set_pins();
+  setup();
 }
