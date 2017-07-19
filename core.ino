@@ -16,9 +16,9 @@ void checkOtaFile() {
   SPIFFS.begin();
   delay(10);
   // check for properties file
-  File f = SPIFFS.open(fName, "r");
+  File f = SPIFFS.open(otaFile, "r");
   if (!f ) {
-    f = SPIFFS.open(fName, "w");
+    f = SPIFFS.open(otaFile, "w");
     if (!f) {
       Serial.println(F("OTA file open failed"));
     }
@@ -41,7 +41,7 @@ void checkOtaFile() {
 }
    
 void updateOtaFile() {
-  File f = SPIFFS.open(fName, "w");
+  File f = SPIFFS.open(otaFile, "w");
   if (!f) {
     Serial.println(F("OTA file open failed"));
   }

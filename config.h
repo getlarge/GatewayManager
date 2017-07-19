@@ -98,7 +98,7 @@ const char* httpServer;
 //const char* Host = "app.getlarge.eu";
 //const char* host = "http://192.168.1.46";
 //const char* url = "/Gateway_HTTP_Update_test.ino.bin" ;
-const char* otaUrl = "https://app.getlarge.eu/firmware/GatewayMQTT_RF69.ino.bin";
+const char* otaUrl = "https://app.getlarge.eu/firmware/GatewayMQTT.ino.bin";
 const char* currentVersion = "4712";
 const char* httpsFingerprint = "1D AE 00 E7 68 70 87 09 A6 1D 27 76 F5 85 C0 F3 AB F2 60 9F"; 
 
@@ -108,4 +108,4 @@ unsigned long configTimeout = 180, lastUpdate = 0, lastYield = 0, lastWifiReconn
 int configCount = 0, wifiFailCount = 0, mqttFailCount = 0, configMode = 0, _otaSignal = 0;
 
 static const int fileSpaceOffset = 700000;
-const String fName = "ota.txt";
+const String otaFile = "ota.txt";
