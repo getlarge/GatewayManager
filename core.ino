@@ -80,7 +80,6 @@ void getUpdated() {
     Serial.println(F("Update sketch..."));
 
     t_httpUpdate_return ret = ESPhttpUpdate.update(otaUrl,"", httpsFingerprint);
-    //t_httpUpdate_return ret = ESPhttpUpdate.update("https://app.getlarge.eu/firmware/GatewayMQTT.ino.bin","","1D AE 00 E7 68 70 87 09 A6 1D 27 76 F5 85 C0 F3 AB F2 60 9F");
     //t_httpUpdate_return ret = ESPhttpUpdate.update(httpServer, httpPort, url, currentVersion, httpsFingerprint);
    
     switch(ret) {

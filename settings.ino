@@ -30,7 +30,6 @@ void configManager() {
 //  wifiManager.setBreakAfterConfig(true);
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   wifiManager.setMinimumSignalQuality(10);
-  //wifiManager.setConnectTimeout(30);
   
   String script;
   script += "<script>";
@@ -57,25 +56,23 @@ void configManager() {
   wifiManager.addParameter(&custom_mqtt_client);
   wifiManager.addParameter(&custom_mqtt_user);
   wifiManager.addParameter(&custom_mqtt_password);
-//  wifiManager.addParameter(&custom_http_server);
-//  wifiManager.addParameter(&custom_http_port);
   
   configMode = 1;
 
   // When no credentials or asking ...
   if ((configCount > 1 && manualConfig == true) || ( mqttServer == "")) {
     Serial.println(F("Manual config access"));
-    wifiManager.setConfigPortalTimeout(configTimeout);
+    wifiManager.setConfigPortalTimeout(configTimeout1);
     //wifiManager.startConfigPortal(deviceId, devicePass);
     wifiManager.startConfigPortal(deviceId);  
   }
 
-  // When wifi is already connected but connection got interrupted ...
+  // When wifi is already connected but connection got interrupted ... TO DO --> make it better!
   if (((configCount > 1 && _MQTT_client.connected() && WiFi.status() == WL_CONNECTED) || (configCount > 1 && !_MQTT_client.connected() && WiFi.status() == WL_CONNECTED)) && manualConfig == false) { 
   //if ((configCount > 1 && _MQTT_client.connected() && WiFi.status() == WL_CONNECTED) || (configCount > 1 && !_MQTT_client.connected() && WiFi.status() == WL_CONNECTED)) {
     Serial.println(F("User config access"));
-    wifiManager.setConfigPortalTimeout(configTimeout);
-    wifiManager.autoConnect(deviceId); 
+    wifiManager.setConfigPortalTimeout(configTimeout2);
+    wifiManager.startConfigPortal(deviceId); 
   }
   
   // After first start or hard reset...
@@ -94,8 +91,6 @@ void configManager() {
       strcpy(mqtt_client, custom_mqtt_client.getValue()); 
       strcpy(mqtt_user, custom_mqtt_user.getValue());
       strcpy(mqtt_password, custom_mqtt_password.getValue());
-  //    strcpy(http_server, custom_http_server.getValue()); 
-  //    strcpy(http_port, custom_http_port.getValue());
       Serial.println(F("Saving config"));
       DynamicJsonBuffer jsonBuffer;
       JsonObject& json = jsonBuffer.createObject();
@@ -104,8 +99,6 @@ void configManager() {
       json["mqtt_client"] = mqtt_client;
       json["mqtt_user"] = mqtt_user;
       json["mqtt_password"] = mqtt_password;
-  //    json["http_server"] = http_server;
-  //    json["http_port"] = http_port;
       strcpy(mqtt_topic_in,mqtt_client);
       strcat(mqtt_topic_in,in);
       strcpy(mqtt_topic_out,mqtt_client);
@@ -118,7 +111,6 @@ void configManager() {
       MY_MQTT_SUBSCRIBE_TOPIC_PREFIX = mqtt_topic_in;
       MY_MQTT_PUBLISH_TOPIC_PREFIX = mqtt_topic_out;
       httpServer = mqtt_server;
-      //httpPort = atoi(http_port);
       File configFile = SPIFFS.open("/config.json", "w");
       if (!configFile) {
         Serial.println(F("Failed to open config file"));

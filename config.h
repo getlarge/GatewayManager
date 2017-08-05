@@ -11,7 +11,7 @@
  * MySensors gateway configuration
  */
  
-#define MY_DEBUG
+//#define MY_DEBUG
 #define MY_BAUD_RATE 115200
 
 #define MY_GATEWAY_MQTT_CLIENT
@@ -104,7 +104,7 @@ const char* httpsFingerprint = "1D AE 00 E7 68 70 87 09 A6 1D 27 76 F5 85 C0 F3 
 
 bool resetConfig = false, wifiResetConfig = false; // set to true to reset FS and/or Wifimanager, don't forget to set this to false after
 bool shouldSaveConfig = false, executeOnce = false, otaSignalReceived = false, manualConfig = false;
-unsigned long configTimeout = 180, lastUpdate = 0, lastYield = 0, lastWifiReconnectAttempt = 0;
+unsigned long configTimeout1 = 3000, configTimeout2 = 180, lastUpdate = 0, lastYield = 0, lastWifiReconnectAttempt = 0;
 int configCount = 0, wifiFailCount = 0, mqttFailCount = 0, configMode = 0, _otaSignal = 0;
 
 static const int fileSpaceOffset = 700000;

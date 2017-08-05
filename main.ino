@@ -57,7 +57,7 @@ void loop(void) {
     //checkButton();
     ++mqttFailCount;
     if ( mqttFailCount >= 10  ) {
-      setReboot();
+      configManager();
     }
   }    
   

@@ -20,8 +20,6 @@
 #include <WiFiClientSecure.h>
 #include <ESP8266HTTPClient.h>        
 #include <ESP8266httpUpdate.h>
-//#include <DNSServer.h>
-//#include <ESP8266WebServer.h>
 
 #include "config.h" 
 
@@ -49,7 +47,7 @@ void before() {
      String ssid = WiFi.SSID();
      String pass = WiFi.psk();
      WiFiMulti.addAP(ssid.c_str(), pass.c_str());
-     while (WiFiMulti.run() != WL_CONNECTED) { //use this when using ESP8266WiFiMulti.h
+     while (WiFiMulti.run() != WL_CONNECTED) { // use this when using ESP8266WiFiMulti.h
         Serial.println("Attempting Wifi connection.... ");     
         delay(500);    
      }
