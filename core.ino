@@ -105,6 +105,7 @@ void checkButton() {
       Serial.println(F("Long push detected, ask for config"));
       manualConfig = true;
       configManager();
+      value = HIGH;
   }
 }
 

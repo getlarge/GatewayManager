@@ -1,5 +1,14 @@
 /**
-
+      ____
+ ____ \__ \              
+ \__ \__/ / __
+ __/ ____ \ \ \
+/ __ \__ \ \/
+\ \ \__/ / __
+ \/ ____ \/ /
+    \__ \__/
+    __/
+    
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
    version 2 as published by the Free Software Foundation.
@@ -14,6 +23,7 @@
 
 #include <ArduinoJson.h>          
 //#include <Arduino.h>
+#include <time.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
@@ -38,7 +48,8 @@ void before() {
   Serial.setDebugOutput(false);
 #endif
  // resetConfig = true;
- 
+
+
   checkOtaFile();
   delay(100);
   
@@ -126,11 +137,12 @@ void before() {
   } else {
     Serial.println(F("Failed to mount FS"));
   }
-
+  
   getDeviceId();
   ticker.detach();
 
   configManager();
-  
+
+
 }
 

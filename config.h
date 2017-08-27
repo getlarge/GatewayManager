@@ -3,7 +3,7 @@
  * Sketch configuration
  */
 
-#define SKETCH_NAME "GatewayMQTT_RF69"
+#define SKETCH_NAME "GatewayMQTT"
 #define SKETCH_VERSION "1.0"
 
 
@@ -11,7 +11,7 @@
  * MySensors gateway configuration
  */
  
-//#define MY_DEBUG
+#define MY_DEBUG
 #define MY_BAUD_RATE 115200
 
 #define MY_GATEWAY_MQTT_CLIENT
@@ -62,9 +62,9 @@
 //#define MY_RFM69_ENABLE_ENCRYPTION
 //#define MY_RFM69_NETWORKID 100
 // for emc2cube shield
-//#define MY_RF69_IRQ_PIN D2 
-//#define MY_RF69_IRQ_NUM MY_RF69_IRQ_PIN
-//#define MY_RF69_SPI_CS D8
+#define MY_RF69_IRQ_PIN D2 
+#define MY_RF69_IRQ_NUM MY_RF69_IRQ_PIN
+#define MY_RF69_SPI_CS D8
 //
 //#define MY_RFM69_ATC_MODE_DISABLED
 //#define MY_RFM69_TX_POWER_DBM 20

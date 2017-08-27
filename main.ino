@@ -22,6 +22,22 @@ void presentation() {
 //}
 
 void setup() {
+    // Synchronize time useing SNTP. This is necessary to verify that
+  // the TLS certificates offered by the server are currently valid.
+  Serial.print(F("Setting time using SNTP"));
+  configTime(8 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  time_t now = time(nullptr);
+  while (now < 1000) {
+    delay(500);
+    Serial.print(".");
+    now = time(nullptr);
+  }
+  Serial.println("");
+  struct tm timeinfo;
+  gmtime_r(&now, &timeinfo);
+  Serial.print("Current time: ");
+  Serial.print(asctime(&timeinfo));
+  
   //ticker.detach();
 //  Serial.flush();
 //  yield(); delay(500);
@@ -54,9 +70,9 @@ void loop(void) {
 
   if (!_MQTT_client.connected() && WiFi.status() == WL_CONNECTED && _otaSignal == 0) {
     ticker.attach(0.3, tick);
-    //checkButton();
+    checkButton();
     ++mqttFailCount;
-    if ( mqttFailCount >= 10  ) {
+    if ( mqttFailCount == 10  ) {
       configManager();
     }
   }    
