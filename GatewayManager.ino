@@ -23,13 +23,16 @@
 
 #include <ArduinoJson.h>          
 //#include <Arduino.h>
-#include <time.h>
+//#include <time.h>
+#include <TimeLib.h>
+#include <WiFiUdp.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-#include <WiFiClientSecure.h>
+//#include <WiFiClientSecure.h>
 #include <ESP8266HTTPClient.h>        
 #include <ESP8266httpUpdate.h>
+
 
 #include "config.h" 
 
@@ -37,9 +40,35 @@
 #include <Ticker.h>         
 #include <Bounce2.h>
 
+static const char ntpServerName[] = "fr.pool.ntp.org";
+const int timeZone = 1;     // Central European Time
+//const int timeZone = -5;  // Eastern Standard Time (USA)
+//const int timeZone = -4;  // Eastern Daylight Time (USA)
+//const int timeZone = -8;  // Pacific Standard Time (USA)
+//const int timeZone = -7;  // Pacific Daylight Time (USA)
+
+unsigned int localPort = 8888;  // local port to listen for UDP packets
+WiFiUDP Udp;
 ESP8266WiFiMulti WiFiMulti;
 Bounce debouncer = Bounce();
 Ticker ticker;
+
+void tick();
+void setPins();
+void checkOtaFile();
+void updateOtaFile();
+void connectWifi();
+void getUpdated();
+void checkButton();
+void getDeviceId();
+void setReboot();
+void setPinsRebootUart();
+void setDefault();
+void saveConfigCallback();
+time_t getNtpTime();
+void digitalClockDisplay();
+void printDigits(int digits);
+void sendNTPpacket(IPAddress &address);
 
 
 void before() {
@@ -48,7 +77,6 @@ void before() {
   Serial.setDebugOutput(false);
 #endif
  // resetConfig = true;
-
 
   checkOtaFile();
   delay(100);
@@ -143,6 +171,14 @@ void before() {
 
   configManager();
 
-
+  delay(500);
+  
+  Serial.println("Starting UDP");
+  Udp.begin(localPort);
+  Serial.print("Local port: ");
+  Serial.println(Udp.localPort());
+  Serial.println("waiting for sync");
+  setSyncProvider(getNtpTime);
+  setSyncInterval(300);
 }
 

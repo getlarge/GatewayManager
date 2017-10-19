@@ -26,7 +26,7 @@ void configManager() {
 #ifndef MY_DEBUG 
   wifiManager.setDebugOutput(false);
 #endif
-//  wifiManager.setAPCallback(configModeCallback);
+  wifiManager.setAPCallback(configModeCallback);
 //  wifiManager.setBreakAfterConfig(true);
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   wifiManager.setMinimumSignalQuality(10);
@@ -46,7 +46,7 @@ void configManager() {
   script += "});";
   script += "</script>";
   wifiManager.setCustomHeadElement(script.c_str());
-  /// WILL ADD STYLES IN THE FUTURE ...
+  /// WILL ADD STYLES IN FUTURE ...
   //WiFiManagerParameter custom_text("<p>This is just a text paragraph</p>");
   //wifiManager.addParameter(&custom_text);
   //wifiManager.setCustomHeadElement("<style>html{filter: invert(100%); -webkit-filter: invert(100%);}</style>");
@@ -58,7 +58,8 @@ void configManager() {
   wifiManager.addParameter(&custom_mqtt_password);
   
   configMode = 1;
-
+//  checkButton();
+  
   // When no credentials or asking ...
   if ((configCount > 1 && manualConfig == true) || ( mqttServer == "")) {
     Serial.println(F("Manual config access"));
