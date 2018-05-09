@@ -49,9 +49,9 @@
 //#define MY_RF24_ENABLE_ENCRYPTION
 #define MY_RF24_PA_LEVEL RF24_PA_HIGH
 #define MY_RF24_CHANNEL  108
-//#define MY_RF24_DATARATE RF24_250KBPS
-#define MY_RF24_DATARATE RF24_1MBPS
-//#define MY_DEBUG_VERBOSE_RF24
+#define MY_RF24_DATARATE RF24_250KBPS
+//#define MY_RF24_DATARATE RF24_1MBPS
+#define MY_DEBUG_VERBOSE_RF24
 
 // RFM69 radio settings
 #define MY_RADIO_RFM69
@@ -71,7 +71,7 @@
 
 //#define MY_SENSOR_NETWORK
 
-#define MY_TRANSPORT_WAIT_READY_MS (10*1000ul)
+//#define MY_TRANSPORT_WAIT_READY_MS (10*1000ul)
 //#define MY_TRANSPORT_TIMEOUT_EXT_FAILURE_STATE (15*60*1000ul)
 //#define MY_TRANSPORT_SANITY_CHECK
 // already set as default
@@ -98,7 +98,7 @@ const char* httpServer;
 //const char* Host = "app.getlarge.eu";
 //const char* host = "http://192.168.1.46";
 //const char* url = "/Gateway_HTTP_Update_test.ino.bin" ;
-const char* otaUrl = "https://app.getlarge.eu/firmware/GatewayMQTT.ino.bin";
+const char* otaUrl = "https://app.aloes.io/firmware/GatewayManager.ino.bin";
 const char* currentVersion = "4712";
 const char* httpsFingerprint = "1D AE 00 E7 68 70 87 09 A6 1D 27 76 F5 85 C0 F3 AB F2 60 9F"; 
 

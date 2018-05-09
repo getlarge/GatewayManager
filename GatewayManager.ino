@@ -40,6 +40,8 @@
 #include <Ticker.h>         
 #include <Bounce2.h>
 
+#include <MySensors.h>
+
 static const char ntpServerName[] = "fr.pool.ntp.org";
 const int timeZone = 1;     // Central European Time
 //const int timeZone = -5;  // Eastern Standard Time (USA)
@@ -148,6 +150,7 @@ void before() {
           strcat(mqtt_topic_in,in); 
           strcpy(mqtt_topic_out,mqtt_client);
           strcat(mqtt_topic_out,out);
+          
           MY_CONTROLLER_URL_ADDRESS = mqtt_server;
           MY_PORT = atoi(mqtt_port);
           MY_MQTT_CLIENT_ID = mqtt_client;
@@ -173,12 +176,12 @@ void before() {
 
   delay(500);
   
-  Serial.println("Starting UDP");
-  Udp.begin(localPort);
-  Serial.print("Local port: ");
-  Serial.println(Udp.localPort());
-  Serial.println("waiting for sync");
-  setSyncProvider(getNtpTime);
-  setSyncInterval(300);
+//  Serial.println("Starting UDP");
+//  Udp.begin(localPort);
+//  Serial.print("Local port: ");
+//  Serial.println(Udp.localPort());
+//  Serial.println("waiting for sync");
+//  setSyncProvider(getNtpTime);
+//  setSyncInterval(300);
 }
 

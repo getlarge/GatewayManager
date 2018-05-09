@@ -2,7 +2,6 @@
 //once settings for connection to wifi and server done, call MySensors lib     //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#include <MySensors.h>
 
 void receiveOtaSignal(int otaSignal) {
   Serial.print(F("OTA signal received: "));
